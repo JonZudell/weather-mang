@@ -1,0 +1,14 @@
+.title {
+    text-align: center;
+}
+.full-width {
+    width:100%;
+}
+.vertical-center {
+    position:relative;
+    top:50%;
+    transform: translateY(-50%);
+}
+.spacer {
+    margin-bottom:4.5rem;
+}

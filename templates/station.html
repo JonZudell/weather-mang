@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Search Results{% endblock %}
+{% block head %}
+    {{ super () }}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="twelve columns">
+            <h3 class="title full-width">Station Information</h3>
+        </div>
+    </div>
+    <div class="row">
+        {% set columns = 'three' %}
+        {% if not station_info['STATE'] %}
+            {% set columns = 'four' %}
+        {% endif %}
+        <div class="{{ columns }} columns">
+            <label class="value-heading">ID</label>
+            <div class="value-description">{{ station_info['ID'] }}</div>
+        </div>
+        <div class="{{ columns }} columns">
+            <label class="value-heading">Name</label>
+            <div class="value-description">{{ station_info['NAME'] }}</div>
+        </div>
+        {% if station_info['STATE'] %}
+        <div class="{{ columns }} columns">
+            <label class="value-heading">State</label>
+            <div class="value-description">{{ station_info['STATE'] }}</div>
+        </div>
+        {% endif %}
+        <div class="{{ columns }} columns">
+            <label class="value-heading">Country</label>
+            <div class="value-description">{{ station_info['COUNTRY'] }}</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="{{ columns }} columns">
+            <label class="value-heading">Elevation</label>
+            <div class="value-description">{{ station_info['ELEVATION'] }} Meters</div>
+        </div>
+        <div class="{{ columns }} columns">
+            <label class="value-heading">Latitude</label>
+            <div class="value-description">{{ station_info['LATITUDE'] }}</div>
+        </div>
+        <div class="{{ columns }} columns">
+            <label class="value-heading">Longitude</label>
+            <div class="value-description">{{ station_info['LONGITUDE'] }}</div>
+        </div>
+    </div>
+    <hr/>
+    {% if temperature_composite is not none %}
+        <div class="row">
+            <div id="temp-chart" style="width:100%; height:400px"></div>
+        </div>
+        <script>
+            $(function() {
+                 {% for item in temperature_composite['VARS'] %}
+                     {% if item is not none %}
+                         var {{ item['name']|safe }} = {{ item['data']|safe }};
+                     {% endif %}
+                 {% endfor %}
+                 $("#temp-chart").highcharts({
+                     title: {
+                         text: {{ temperature_composite['META']['title']|safe }}
+                     },
+                     xAxis: {
+                         type: {{ temperature_composite['META']['type']|safe }}
+                     },
+                     yAxis: {
+                         title: {
+                             text: {{ temperature_composite['META']['yAxis-title']|safe }}
+                         }
+                     },
+                     tooltip: {
+                         crosshairs: true,
+                         shared: true,
+                         valueSuffix: 'tenths of &#8451'
+                     },
+                     legend: {
+                     },
+                     series:[
+                         {% for item in temperature_composite['SERIES'] -%}
+                              {% raw -%} { {% endraw -%}
+                              {% for key in item.keys() -%}
+                                  {{ key }}: {{ item[key]|safe }} {% if not loop.last -%} {% raw -%},{% endraw -%} {% endif -%}
+                              {% endfor -%}
+                              {% if loop.last -%}
+                                  {% raw -%}} {% endraw -%}
+                              {% else -%}
+                                  {% raw -%}}, {% endraw -%}
+                              {% endif -%}
+                         {% endfor -%}
+                     ]
+                 });
+             });
+        </script>
+    {% endif %}
+{% endblock %}
+
