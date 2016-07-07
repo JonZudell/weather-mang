@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% import "macros.html" as macros %}
 <html lang="en">
     <head>
         {% block head %}
@@ -7,7 +8,8 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/custom.css') }}">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
         <script src="http://code.highcharts.com/highcharts.js"></script>
-        <script src="http://code.highcharts.com/maps/highmaps.js"></script>
+        <script src="http://code.highcharts.com/maps/modules/map.js"></script>
+        <script src="https://code.highcharts.com/mapdata/custom/world.js"></script>
         <title>{% block title %} {% endblock %} - Weather Mang</title>
         {% endblock %}
     </head>

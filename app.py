@@ -2,6 +2,7 @@
 from flask import Flask, request, session, g, redirect, url_for, render_template
 import psycopg2
 import os
+import calendar
 
 app = Flask(__name__)
 app.debug = True
@@ -11,24 +12,39 @@ app.register_blueprint(search.search_blueprint, url_prefix='/api/')
 app.register_blueprint(station.station_blueprint, url_prefix='/api/')
 app.register_blueprint(ghcn_data.ghcn_data_blueprint, url_prefix='/api/')
 
+def build_series(name, data):
+    return {'name' : name, 'data' : data, 'zIndex' : 1, 'marker' : '{ fillColor: "white", lineWidth: 2, lineColor: Highcharts.getOptions().colors[0] }'}
+
+def convert_data(element, conversion_factor):
+    return [[calendar.month_name[item['MONTH']],round(item['VALUE']) / conversion_factor] for item in element] if element is not None else None
+
+
 def construct_temperature_composite(ghcn_composite):
-    temperature_composite = {'META' : None,
-                             'VARS' : None,
-                             'SERIES' : None}
-    tmax_data = {'name' : 'tmax', 'data' : [[item['MONTH'],round(item['VALUE'])] for item in ghcn_composite['TMAX']]} if ghcn_composite['TMAX'] is not None else None
-    tmin_data = {'name' : 'tmin', 'data' : [[item['MONTH'],round(item['VALUE'])] for item in ghcn_composite['TMIN']]} if ghcn_composite['TMIN'] is not None else None
-    tavg_data = {'name' : 'tavg', 'data' : [[item['MONTH'],round(item['VALUE'])] for item in ghcn_composite['TAVG']]} if ghcn_composite['TAVG'] is not None else None
-    temperature_composite['VARS'] = [ item for item in [tmax_data, tmin_data, tavg_data] if item is not None ]
-    temperature_composite['META'] = {'title' : "'Average Temperatures by Month'", 'type' : "'month'", 'yAxis-title' : "'tenths of &#7451;'"}
-    
-    temperature_composite['SERIES'] = [{'name' : "'Average TMAX'", 'data' : 'tmax', 'zIndex' : 1, 'marker' : '{ fillColor: "white", lineWidth: 2, lineColor: Highcharts.getOptions().colors[0] }'},
-                                       {'name' : "'Average TMIN'", 'data' : 'tmin', 'zIndex' : 1, 'marker' : '{ fillColor: "white", lineWidth: 2, lineColor: Highcharts.getOptions().colors[0] }'},
-                                       {'name' : "'Average TAVG'", 'data' : 'tavg', 'zIndex' : 1, 'marker' : '{ fillColor: "white", lineWidth: 2, lineColor: Highcharts.getOptions().colors[0] }'}]
+    temperature_composite = {'META' : None, 'VARS' : None, 'SERIES' : None}
+
+    tmax_data = {'name' : 'tmax', 'data' : convert_data(ghcn_composite['TMAX'], 10)}
+    tmin_data = {'name' : 'tmin', 'data' : convert_data(ghcn_composite['TMIN'], 10)}
+    tavg_data = {'name' : 'tavg', 'data' : convert_data(ghcn_composite['TAVG'], 10)}
+
+    temperature_composite['VARS'] = [ item for item in [tmax_data, tmin_data, tavg_data] if item['data'] is not None ]
+    temperature_composite['META'] = {'title' : "'Temperatures by Month'", 'type' : "'month'", 'yAxis-title' : "'Degrees Celsius'"}
+    temperature_composite['SERIES'] = []
+
+    if tmax_data['data'] is not None:
+        temperature_composite['SERIES'].append(build_series("'Average TMAX'", "tmax"))
+
+    if tmin_data['data'] is not None:
+        temperature_composite['SERIES'].append(build_series("'Average TMIN'", "tmin"))
+
+    if tavg_data['data'] is not None:
+        temperature_composite['SERIES'].append(build_series("'Average TAVG'", "tavg"))
+
     return temperature_composite
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    station_list = station.get_all_station_info()
+    return render_template('index.html', station_list=station_list)
 
 @app.route('/search_results/')
 def search_results():
@@ -40,8 +56,10 @@ def search_results():
 def station_info():
     station_id = request.args.get('station_id', None)
     station_info = station.get_station_info(station_id)
+
     ghcn_composite = ghcn_data.get_composite_report(station_id)
     temperature_composite = construct_temperature_composite(ghcn_composite)
+
     return render_template('station.html', station_info=station_info, ghcn_composite=ghcn_composite, temperature_composite=temperature_composite)
 
 if __name__ == '__main__':

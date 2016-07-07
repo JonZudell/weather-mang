@@ -67,6 +67,13 @@ def build_data():
 
     conn.close()
 
+def get_all_station_info():
+    if len(stations.keys()) == 0:
+        build_data()
+
+    return stations
+    
+
 def get_station_info(station_id):
     if len(stations.keys()) == 0:
         build_data()
@@ -76,7 +83,11 @@ def get_station_info(station_id):
     else:
         return None
 
-@station_blueprint.route('/')
+@station_blueprint.route('/get_all_station_info_json')
+def get_all_station_info_json():
+    return json.dumps(get_all_station_info())
+
+@station_blueprint.route('/get_station_info_json')
 def get_station_info_json():
     station_id = request.args.get('id', None)
     return json.dumps(get_station_info(station_id))

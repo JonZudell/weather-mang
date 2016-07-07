@@ -55,9 +55,7 @@
         <script>
             $(function() {
                  {% for item in temperature_composite['VARS'] %}
-                     {% if item is not none %}
-                         var {{ item['name']|safe }} = {{ item['data']|safe }};
-                     {% endif %}
+                     var {{ item['name']|safe }} = {{ item['data']|safe }};
                  {% endfor %}
                  $("#temp-chart").highcharts({
                      title: {
@@ -74,7 +72,7 @@
                      tooltip: {
                          crosshairs: true,
                          shared: true,
-                         valueSuffix: 'tenths of &#8451'
+                         valueSuffix: ' Degrees Celcius'
                      },
                      legend: {
                      },
@@ -82,7 +80,8 @@
                          {% for item in temperature_composite['SERIES'] -%}
                               {% raw -%} { {% endraw -%}
                               {% for key in item.keys() -%}
-                                  {{ key }}: {{ item[key]|safe }} {% if not loop.last -%} {% raw -%},{% endraw -%} {% endif -%}
+                                  {{ key }}: {{ item[key]|safe }} 
+                                  {% if not loop.last -%} {% raw -%},{% endraw -%} {% endif -%}
                               {% endfor -%}
                               {% if loop.last -%}
                                   {% raw -%}} {% endraw -%}

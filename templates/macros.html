@@ -1,0 +1,40 @@
+{% macro make_map(station_list) %}
+<div class="row">
+    <div id="map-container" width="100%" height="550px"></div>
+    <script type="text/javascript">
+        $(function () {
+            $('#map-container').highcharts('Map', {
+                title: {
+                    text: 'Station Visualizer'
+                }, mapNavigation: {
+                    enabled: true
+                }, tooltip: {
+                    headerFormat: '',
+                    pointerFormat: '<b>{point.name}</b> - {point.id} </br> Lat: {point.lat}, Lon: {point.lon}'
+                }, series: [{
+                    mapData: Highcharts.maps['custom/world'],
+                    name: 'Basemap',
+                    borderColor: '#000000',
+                    nullColor: 'rgba(200,200,200, 0.3)',
+                    showInLegend false
+                }, {
+                    type: 'mappoint',
+                    name: 'Stations',
+                    color: Highcharts.getOptions().colors[1]
+                    data: [
+                        {% for station in station_list %}
+                            {% raw %} { {% endraw %}
+                            name: {{ station['NAME'] }},
+                            lat:  {{ station['LATITUDE'] }},
+                            lon: {{ station['LONGITUDE'] }},
+                            id: {{ station['ID'] }}
+                            {% raw %} } {% endraw %}
+                            {% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    ]
+                }]
+             });
+         });
+    </script>
+</div>
+{% endmacro %}
