@@ -1,9 +1,9 @@
-{% macro make_map(station_list) %}
+{% macro make_map(stations) %}
 <div class="row">
-    <div id="map-container" width="100%" height="550px"></div>
+    <div id="station-visualiser" width="100%" height="550px"></div>
     <script type="text/javascript">
         $(function () {
-            $('#map-container').highcharts('Map', {
+            $('#station-visualiser').highcharts('Map', {
                 title: {
                     text: 'Station Visualizer'
                 }, mapNavigation: {
@@ -22,12 +22,12 @@
                     name: 'Stations',
                     color: Highcharts.getOptions().colors[1]
                     data: [
-                        {% for station in station_list %}
+                        {% for key in stations.keys() %}
                             {% raw %} { {% endraw %}
-                            name: {{ station['NAME'] }},
-                            lat:  {{ station['LATITUDE'] }},
-                            lon: {{ station['LONGITUDE'] }},
-                            id: {{ station['ID'] }}
+                            name: '{{ stations[key]['NAME'] }}',
+                            lat:  {{ stations[key]['LATITUDE'] }},
+                            lon: {{ stations[key]['LONGITUDE'] }},
+                            id: '{{ stations[key]['ID'] }}'
                             {% raw %} } {% endraw %}
                             {% if not loop.last %}, {% endif %}
                         {% endfor %}

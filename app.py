@@ -43,8 +43,8 @@ def construct_temperature_composite(ghcn_composite):
 
 @app.route('/')
 def index():
-    station_list = station.get_all_station_info()
-    return render_template('index.html', station_list=station_list)
+    stations = station.get_all_station_info()
+    return render_template('index.html', stations=stations)
 
 @app.route('/search_results/')
 def search_results():
@@ -63,4 +63,4 @@ def station_info():
     return render_template('station.html', station_info=station_info, ghcn_composite=ghcn_composite, temperature_composite=temperature_composite)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(threaded=True)
