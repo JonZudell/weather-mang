@@ -48,51 +48,8 @@
         </div>
     </div>
     <hr/>
-    {% if temperature_composite is not none %}
-        <div class="row">
-            <div id="temp-chart" style="width:100%; height:400px"></div>
-        </div>
-        <script>
-            $(function() {
-                 {% for item in temperature_composite['VARS'] %}
-                     var {{ item['name']|safe }} = {{ item['data']|safe }};
-                 {% endfor %}
-                 $("#temp-chart").highcharts({
-                     title: {
-                         text: {{ temperature_composite['META']['title']|safe }}
-                     },
-                     xAxis: {
-                         type: {{ temperature_composite['META']['type']|safe }}
-                     },
-                     yAxis: {
-                         title: {
-                             text: {{ temperature_composite['META']['yAxis-title']|safe }}
-                         }
-                     },
-                     tooltip: {
-                         crosshairs: true,
-                         shared: true,
-                         valueSuffix: ' Degrees Celcius'
-                     },
-                     legend: {
-                     },
-                     series:[
-                         {% for item in temperature_composite['SERIES'] -%}
-                              {% raw -%} { {% endraw -%}
-                              {% for key in item.keys() -%}
-                                  {{ key }}: {{ item[key]|safe }} 
-                                  {% if not loop.last -%} {% raw -%},{% endraw -%} {% endif -%}
-                              {% endfor -%}
-                              {% if loop.last -%}
-                                  {% raw -%}} {% endraw -%}
-                              {% else -%}
-                                  {% raw -%}}, {% endraw -%}
-                              {% endif -%}
-                         {% endfor -%}
-                     ]
-                 });
-             });
-        </script>
-    {% endif %}
+    {{ macros.make_map(station_dict) }}
+    {{ macros.make_temp_chart(temperature_composite) }}
+    {{ macros.make_degree_days_chart(degree_days_composite) }}
+    {{ macros.make_precip_chart(precip_composite) }}
 {% endblock %}
-

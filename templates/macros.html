@@ -5,36 +5,173 @@
         $(function () {
             $('#station-visualiser').highcharts('Map', {
                 title: {
-                    text: 'Station Visualizer'
-                }, mapNavigation: {
-                    enabled: true
+                    text: 'Station Location'
                 }, tooltip: {
-                    headerFormat: '',
-                    pointerFormat: '<b>{point.name}</b> - {point.id} </br> Lat: {point.lat}, Lon: {point.lon}'
+                    enabled: false
                 }, series: [{
                     mapData: Highcharts.maps['custom/world'],
                     name: 'Basemap',
                     borderColor: '#000000',
                     nullColor: 'rgba(200,200,200, 0.3)',
-                    showInLegend false
+                    showInLegend: false
                 }, {
                     type: 'mappoint',
-                    name: 'Stations',
-                    color: Highcharts.getOptions().colors[1]
+                    showInLegend: false,
+                    color: Highcharts.getOptions().colors[1],
                     data: [
-                        {% for key in stations.keys() %}
-                            {% raw %} { {% endraw %}
+                        {% for key in stations.keys() -%}
+                            {% raw -%} { {% endraw -%}
                             name: '{{ stations[key]['NAME'] }}',
                             lat:  {{ stations[key]['LATITUDE'] }},
                             lon: {{ stations[key]['LONGITUDE'] }},
                             id: '{{ stations[key]['ID'] }}'
-                            {% raw %} } {% endraw %}
-                            {% if not loop.last %}, {% endif %}
-                        {% endfor %}
+                            {% raw -%} } {% endraw -%}
+                            {% if not loop.last -%}, {% endif %}
+                        {% endfor -%}
                     ]
                 }]
              });
          });
     </script>
 </div>
+<hr>
+{% endmacro %}
+
+{% macro make_temp_chart(temperature_composite) %}
+    {% if temperature_composite is not none %}
+        <div class="row">
+            <div id="temp-chart" style="width:100%; height:400px"></div>
+        </div>
+        <script>
+            $(function() {
+                 {% for item in temperature_composite['VARS'] %}
+                     var {{ item['name']|safe }} = {{ item['data']|safe }};
+                 {% endfor %}
+                 $("#temp-chart").highcharts({
+                     title: {
+                         text: {{ temperature_composite['META']['title']|safe }}
+                     }, xAxis: {
+                         categories: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+                     }, yAxis: {
+                         title: {
+                             text: {{ temperature_composite['META']['yAxis-title']|safe }}
+                         }
+                     }, tooltip: {
+                         crosshairs: true,
+                         shared: true,
+                         valueSuffix: ' Degrees Celcius'
+                     }, series:[
+                         {% for item in temperature_composite['SERIES'] -%}
+                              {% raw -%} { {% endraw -%}
+                              {% for key in item.keys() -%}
+                                  {{ key }}: {{ item[key]|safe }} 
+                                  {% if not loop.last -%} {% raw -%},{% endraw -%} {% endif -%}
+                              {% endfor -%}
+                              {% if loop.last -%}
+                                  {% raw -%}} {% endraw -%}
+                              {% else -%}
+                                  {% raw -%}}, {% endraw -%}
+                              {% endif -%}
+                         {% endfor -%}
+                     ]
+                 });
+             });
+        </script>
+        <hr>
+    {% endif %}
+{% endmacro %}
+
+{% macro make_precip_chart(precip_composite) %}
+    {% if precip_composite is not none %}
+        <div class="row">
+            <div id="precip-chart" style="width:100%; hieght:400px;"></div>
+        </div>
+        <script>
+            $(function() {
+                 {% for item in precip_composite['VARS'] %}
+                     var {{ item['name']|safe }} = {{ item['data']|safe }};
+                 {% endfor %}
+                 $("#precip-chart").highcharts({
+                     chart: {
+                         type: 'column'
+                     }, title: {
+                         text: {{ precip_composite['META']['title']|safe }}
+                     }, xAxis: {
+                         categories: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+                     }, yAxis: {
+                         title: {
+                             text: {{ precip_composite['META']['yAxis-title']|safe }}
+                         }
+                     }, tooltip: {
+                         crosshairs: true,
+                         shared: true,
+                         valueSuffix: ' Precip (mm)'
+                     }, series: [
+                         {% for item in precip_composite['SERIES'] -%}
+                              {% raw -%} { {% endraw -%}
+                              {% for key in item.keys() -%}
+                                  {{ key }}: {{ item[key]|safe }} 
+                                  {% if not loop.last -%} {% raw -%},{% endraw -%} {% endif -%}
+                              {% endfor -%}
+                              {% if loop.last -%}
+                                  {% raw -%}} {% endraw -%}
+                              {% else -%}
+                                  {% raw -%}}, {% endraw -%}
+                              {% endif -%}
+                         {% endfor -%}
+                     ]
+                });
+            });
+        </script>
+        <hr>
+    {% endif %}
+{% endmacro %}
+{% macro make_degree_days_chart(degree_days_composite) %}
+    {% if precip_composite is not none %}
+        <div class="row">
+            <div id="degree-days-chart" style="width:100%; hieght:400px;"></div>
+        </div>
+        <script>
+            $(function() {
+                 {% for item in degree_days_composite['VARS'] %}
+                     var {{ item['name']|safe }} = {{ item['data']|safe }};
+                 {% endfor %}
+                 $("#degree-days-chart").highcharts({
+                     chart: {
+                         type: 'column'
+                     }, title: {
+                         text: {{ degree_days_composite['META']['title']|safe }}
+                     }, xAxis: {
+                         categories: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+                     }, yAxis: {
+                         title: {
+                             text: {{ degree_days_composite['META']['yAxis-title']|safe }}
+                         }
+                     }, plotOptions: {
+                         series: {
+                             stacking: 'normal'
+                         }
+                     }, tooltip: {
+                         crosshairs: true,
+                         shared: true,
+                         valueSuffix: ' Averaged Days'
+                     }, series: [
+                         {% for item in degree_days_composite['SERIES'] -%}
+                              {% raw -%} { {% endraw -%}
+                              {% for key in item.keys() -%}
+                                  {{ key }}: {{ item[key]|safe }} 
+                                  {% if not loop.last -%} {% raw -%},{% endraw -%} {% endif -%}
+                              {% endfor -%}
+                              {% if loop.last -%}
+                                  {% raw -%}} {% endraw -%}
+                              {% else -%}
+                                  {% raw -%}}, {% endraw -%}
+                              {% endif -%}
+                         {% endfor -%}
+                     ]
+                });
+            });
+        </script>
+        <hr>
+    {% endif %}
 {% endmacro %}

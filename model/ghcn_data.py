@@ -8,6 +8,7 @@ from flask import Blueprint, request
 
 ghcn_data_blueprint = Blueprint('ghcn_data', __name__)
 
+
 def run_queries(queries, station_id):
     conn = psycopg2.connect("host='{0}' dbname='{1}' user='{2}' password='{3}'".format(os.environ['INGEST_HOST'],
                                                                                        os.environ['INGEST_DB'],
@@ -29,17 +30,28 @@ def run_queries(queries, station_id):
     conn.close()
     return query_results
 
+
 def get_composite_report(station_id):
-    queries = {'TMAX' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_TMAX" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" ''',
-               'TMIN' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_TMIN" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" ''',
-               'PRCP' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_PRCP" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" ''',
-               'SNOW' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_SNOW" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" ''',
-               'SNWD' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_SNWD" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" ''',
-               'SNWD' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_AWDR" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" ''',
-               'AWDR' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_AWDR" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" ''',
-               'AWND' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_AWND" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" ''',
-               'TAVG' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_TAVG" WHERE "ID" = %s GROUP BY "MONTH" ORDER BY "MONTH" '''}
-    
+    queries = {'TMAX' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_TMAX" WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'TMIN' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_TMIN" WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'PRCP' : '''SELECT AVG("SUMMED_MONTH_YEAR"."VALUE"), "SUMMED_MONTH_YEAR"."MONTH" FROM (SELECT SUM("VALUE") AS "VALUE", "MONTH" FROM "GHCN_DATA"."GHCN_PRCP"
+                                                                                         WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH", "YEAR") "SUMMED_MONTH_YEAR" 
+                           GROUP BY "SUMMED_MONTH_YEAR"."MONTH" ORDER BY "MONTH"''',
+               'SNOW' : '''SELECT AVG("SUMMED_MONTH_YEAR"."VALUE"), "SUMMED_MONTH_YEAR"."MONTH" FROM (SELECT SUM("VALUE") AS "VALUE", "MONTH" FROM "GHCN_DATA"."GHCN_SNOW"
+                                                                                         WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH", "YEAR") "SUMMED_MONTH_YEAR" 
+                           GROUP BY "SUMMED_MONTH_YEAR"."MONTH" ORDER BY "MONTH"''',
+               'SNWD' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_SNWD" WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'AWDR' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_AWDR" WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'AWND' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_AWND" WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'TAVG' : '''SELECT AVG("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_TAVG" WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'TMAXEXTREME' : '''SELECT MAX("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_TMAX" WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'TMINEXTREME' : '''SELECT MIN("VALUE"), "MONTH" FROM "GHCN_DATA"."GHCN_TMIN" WHERE "ID" = %s AND "Q_FLAG" IS NULL GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'AVGCDDAYS' : '''SELECT AVG("YEAR_MONTH_COUNT"."COUNT"), "YEAR_MONTH_COUNT"."MONTH" FROM (SELECT COUNT(CASE WHEN "VALUE" > 183 THEN 1 END) AS "COUNT", "MONTH" FROM "GHCN_DATA"."GHCN_TAVG"
+                                                                                                   WHERE "ID" = %s GROUP BY "YEAR", "MONTH") "YEAR_MONTH_COUNT"
+                                GROUP BY "MONTH" ORDER BY "MONTH"''',
+               'AVGHDDAYS' : '''SELECT AVG("YEAR_MONTH_COUNT"."COUNT"), "YEAR_MONTH_COUNT"."MONTH" FROM (SELECT COUNT(CASE WHEN "VALUE" < 183 THEN 1 END) AS "COUNT", "MONTH" FROM "GHCN_DATA"."GHCN_TAVG"
+                                                                                                   WHERE "ID" = %s GROUP BY "YEAR", "MONTH") "YEAR_MONTH_COUNT"
+                                GROUP BY "MONTH" ORDER BY "MONTH"'''}
     result = run_queries(queries, station_id)
     return result
     
