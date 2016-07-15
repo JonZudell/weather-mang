@@ -5,6 +5,7 @@ import datetime
 import json
 import time
 from flask import Blueprint, request
+import calendar
 
 ghcn_data_blueprint = Blueprint('ghcn_data', __name__)
 
