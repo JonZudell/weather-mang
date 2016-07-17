@@ -75,7 +75,7 @@ def construct_precip_composite(ghcn_composite):
     precip_composite['SERIES'] = []
 
     if prcp_data['data'] is not None:
-        precip_composite['SERIES'].append(build_series("'Average Rainfall'", "prcp"))
+        precip_composite['SERIES'].append(build_series("'Average Precipitation'", "prcp"))
 
     if snow_data['data'] is not None:
         precip_composite['SERIES'].append(build_series("'Average Snowfall'", "snow"))

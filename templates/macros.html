@@ -36,7 +36,44 @@
 </div>
 <hr>
 {% endmacro %}
-
+{% macro make_station_table(stations) %}
+<div class="row">
+    <div class="twelve columns">
+        <table style="width:100%;">
+            <tr>
+                <th style="width:25%" id="station_id">
+                    <label>ID</label>
+                </th>
+                <th style="width:25%" id="station_name">
+                    <label>NAME</label>
+                </th>
+                <th style="width:25%" id="station_state">
+                    <label>STATE</label>
+                </th>
+                <th style="width:25%" id="station_country">
+                    <label>COUNTRY</label>
+                </th>
+            </tr>
+            {% for station in stations['RESULTS'] %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('station_info', station_id=station['ID']) }}">{{ station['ID'] }}</a>
+                    </td>
+                    <td>
+                        <label>{{ station['NAME'] }}</label>
+                    </td>
+                    <td>
+                        <label>{{ station['STATE'] }}</label>
+                    </td>
+                    <td>
+                        <label>{{ station['COUNTRY'] }}</label>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endmacro %}
 {% macro make_temp_chart(temperature_composite) %}
     {% if temperature_composite is not none %}
         <div class="row">

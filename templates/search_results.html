@@ -2,31 +2,58 @@
 {% block title %}Search Results{% endblock %}
 {% block head %}
     {{ super () }}
+    <script type="text/javascript">
+    var table = $('table');
+    
+    $('#station_id, #station_name, #station_state, #station_country')
+        .wrapInner('<span title="sort this column"/>')
+        .each(function(){
+            
+            var th = $(this),
+                thIndex = th.index(),
+                inverse = false;
+            
+            th.click(function(){
+                
+                table.find('td').filter(function(){
+                    
+                    return $(this).index() === thIndex;
+                    
+                }).sortElements(function(a, b){
+                    
+                    return $.text([a]) > $.text([b]) ?
+                        inverse ? -1 : 1
+                        : inverse ? 1 : -1;
+                    
+                }, function(){
+                    
+                    // parentNode is the element we want to move
+                    return this.parentNode; 
+                    
+                });
+                
+                inverse = !inverse;
+                    
+            });
+                
+        });
+    </script>
 {% endblock %}
 {% block content %}
-    <form action="/search_results/" method="get">
-        <div class="row">
-            <div class="nine columns">
-                <input class="u-full-width" type="search" placeholder="Search Term" id="term" name="term" value="{{ term }}">
-            </div>
-            <div class="three columns">
-                <input class="button-primary full-width" type="submit" value="Submit">
-            </div>
-        </div>
-        {% if results %}
-            {{ results['RESULTS'] | length }} results returned in {{ results['TIME'] }} seconds
-            {% for match in results['RESULTS'] %}
-                <div class="row">
-                    <div class="twelve columns">
-                        <a href="{{ url_for('station_info', station_id=match['ID']) }}">{{ match['ID'] }}</a> - {{ match['NAME'] }} {% if match['STATE'] %}, {{ match['STATE'] }} {% endif %} {% if match['COUNTRY'] %}, {{ match['COUNTRY'] }} {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
+<div class="row">
+    <div class="twelve columns">
+        <form action="/search_results/" method="get">
             <div class="row">
-                 Sorry, your search has returned nothing currently all site functionality is restricted to stations with WMO ID numbers.
+                <div class="nine columns">
+                    <input class="u-full-width" type="search" placeholder="Search Term" id="term" name="term" value="{{ term }}">
+                </div>
+                <div class="three columns">
+                    <input class="button-primary full-width" type="submit" value="Submit">
+                </div>
             </div>
-        {% endif %}
-    </form>
+        </form>
+    </div>
+    {{ macros.make_station_table(stations) }}
+</div>
 {% endblock %}
 

@@ -4,15 +4,19 @@
     {{ super () }}
 {% endblock %}
 {% block content %}
-    <form action="/search_results/" method="get">
-        <div class="row">
-            <div class="nine columns">
-                <input class="u-full-width" type="search" placeholder="Search Term" id="term" name="term">
+<div class="row">
+    <div class="twelve columns">
+        <form action="/search_results/" method="get">
+            <div class="row">
+                <div class="nine columns">
+                    <input class="u-full-width" type="search" placeholder="Search Term" id="term" name="term">
+                </div>
+                <div class="three columns">
+                    <input class="button-primary u-full-width" type="submit" value="Submit">
+                </div>
             </div>
-            <div class="three columns">
-                <input class="button-primary u-full-width" type="submit" value="Submit">
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
+</div>
 {% endblock %}
 

@@ -16,11 +16,15 @@ app.register_blueprint(ghcn_data.ghcn_data_blueprint, url_prefix='/api/')
 def index():
     return render_template('index.html')
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/search_results/')
 def search_results():
     term = request.args.get('term', None)
-    results = search.search(term)
-    return render_template('search_results.html', results=results, term=term)
+    stations = search.search(term)
+    return render_template('search_results.html', stations=stations, term=term)
 
 @app.route('/station_info/')
 def station_info():
