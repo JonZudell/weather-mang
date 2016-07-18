@@ -37,6 +37,12 @@
 <hr>
 {% endmacro %}
 {% macro make_station_table(stations) %}
+{% if stations['RESULTS'] | length > 0 %}
+<div class="row">
+    <div class="twelve columns">
+        <p>{{ stations['RESULTS'] | length }} returned in {{ stations['TIME'] }} Seconds</p>
+    </div>
+</div>
 <div class="row">
     <div class="twelve columns">
         <table style="width:100%;">
@@ -73,6 +79,13 @@
         </table>
     </div>
 </div>
+{% else %}
+<div class="row">
+    <div class="twelve columns">
+        <p>Sorry, no results were returned. Currently the search is restricted to only WMO stations. You can search by Country, State, or Station Name.</p>
+    </div>
+</div>
+{% endif %}
 {% endmacro %}
 {% macro make_temp_chart(temperature_composite) %}
     {% if temperature_composite is not none %}
