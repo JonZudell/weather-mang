@@ -23,7 +23,10 @@ def about():
 @app.route('/search_results/')
 def search_results():
     term = request.args.get('term', None)
+    page = request.args.get('page', 1)
+    sort_key = request.args.get('sort_key', 'NAME')
     stations = search.search(term)
+    stations['RESULTS'] = sorted(stations['RESULTS'], key=lambda k: k[sort_key])
     return render_template('search_results.html', stations=stations, term=term)
 
 @app.route('/station_info/')
